@@ -1,0 +1,17 @@
+[features]
+seeds = false
+[programs.localnet]
+voting = "87WLQAHeR49beh5N1M7SCMyv9fvp2hkMSiwG88zqUXd9"
+
+[programs.testnet]
+voting = "87WLQAHeR49beh5N1M7SCMyv9fvp2hkMSiwG88zqUXd9"
+
+[registry]
+url = "https://anchor.projectserum.com"
+
+[provider]
+cluster = "testnet"
+wallet = "/home/bojko/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
