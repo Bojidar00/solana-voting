@@ -4,16 +4,39 @@
    Topic: <input type="text" v-model="topic"/>
    Submition period: <input type="text" v-model="sdeadline"/>
    Voting period: <input type="text" v-model="vdeadline"/>
+   Organisation PublicKey: <input type="text" v-model="org"/>
      
     </form>
     <button @click="create">create</button>
+    <button @click="createwith">create with organisation</button>
     
     <form>
    Option: <input type="text" v-model="option"/>
      
     </form>
      
-    
+    <form>
+      Organization: <input type="text" v-model="organisation"/>
+    </form>
+    <button @click="createOrganisation">create organisation</button>
+
+
+
+
+
+     <table>
+       <tr><th>Organisation</th></tr>
+       <tr v-for="org in organisations" :key="org.publicKey"><td>{{org.account.name}}{{org.publicKey}}</td><td><button @click="joinOrganisation(org)">join Organisation</button></td> <td>
+
+           <form>
+      Allow votiong: <input type="text" v-model="publicKey"/>
+    </form>
+    <button @click="allowVoting(org,publicKey)"> Allow votiong</button>
+       </td></tr>
+     </table>
+
+     
+
 
    <table>
        <tr><th>Topic</th></tr>
@@ -56,12 +79,16 @@ export default {
       topics:[],
       sdeadline:0,
       vdeadline:0,
+      organisation:'',
+      organisations:[],
+      publicKey:'',
+      org:'',
     }
   },async mounted(){
     const { program } = useWorkspace()
      const data = await program.value.account.voteTopic.all();
      this.topics = data;
-      console.log(data);
+      
 
       for (let i =0;i<data.length;i++){
         let options= await this.getData(data[i]);
@@ -69,7 +96,12 @@ export default {
       }
       
     
-      console.log(this.options);
+      
+      const data2 = await program.value.account.organisation.all();
+     
+      this.organisations=data2;
+        const data3 = await program.value.account.organisationParticipant.all();
+      console.log(data3);
   },
   components:{
     WalletMultiButton
@@ -91,6 +123,85 @@ export default {
       signers: [baseAccount],
     });
      
+   },
+   async createwith(){
+    console.log(this.topic);
+    console.log(this.sdeadline);
+    console.log(this.vdeadline);
+      const {wallet, program } = useWorkspace()
+      
+      const pkey = new PublicKey(this.org);
+      await program.value.rpc.createWithOrganisation( this.topic,this.sdeadline,this.vdeadline,pkey,{
+      accounts: {
+        voteAccount: baseAccount.publicKey,
+        user: wallet.value.publicKey,
+        systemProgram: web3.SystemProgram.programId,
+      },
+      signers: [baseAccount],
+    });
+     
+   },
+   
+  async  createOrganisation(){
+     const {wallet, program } = useWorkspace()
+     await program.value.rpc.createOrganisation( this.organisation,{
+      accounts: {
+        organisationAccount: baseAccount.publicKey,
+        user: wallet.value.publicKey,
+        systemProgram: web3.SystemProgram.programId,
+      },
+      signers: [baseAccount],
+    });
+   },
+   async joinOrganisation(org){
+       const { program ,wallet } = useWorkspace()
+      const programID = new PublicKey(idl.metadata.address);
+
+      const [participantAccount, seed2] = await web3.PublicKey
+      .findProgramAddress(
+        [
+         
+          org.publicKey.toBuffer(),
+         wallet.value.publicKey.toBuffer(),
+        ],
+        programID
+      );
+      console.log(seed2);
+
+     await program.value.rpc.joinOrganisation({
+      accounts: {
+        organisationAccount: org.publicKey,
+        organisationParticipant: participantAccount,
+        user: wallet.value.publicKey,
+        systemProgram: web3.SystemProgram.programId,
+      },
+     
+    });
+   },
+   async allowVoting(org, publicKey){
+const { program ,wallet } = useWorkspace()
+      const programID = new PublicKey(idl.metadata.address);
+       const pkey = new PublicKey(publicKey);
+
+      const [participantAccount, seed2] = await web3.PublicKey
+      .findProgramAddress(
+        [
+         
+          org.publicKey.toBuffer(),
+          pkey.toBuffer(),
+        ],
+        programID
+      );
+      console.log(seed2);
+
+     await program.value.rpc.allowVoting({
+      accounts: {
+        organisationAccount: org.publicKey,
+        participant: participantAccount,
+        authority: wallet.value.publicKey,
+      },
+     
+    });
    },
    async show(){
      const { program } = useWorkspace()
@@ -126,6 +237,7 @@ export default {
         programID
       );
       console.log(seed);
+      if(acc.account.use_organisation==false){
       await program.value.rpc.vote({
       accounts: {
         voteAccount: acc.publicKey,
@@ -134,7 +246,28 @@ export default {
          user: wallet.value.publicKey,
          systemProgram: web3.SystemProgram.programId,
       },
-    });  
+    });  }else{
+      const [participantAccount, seed] = await web3.PublicKey
+      .findProgramAddress(
+        [
+          acc.account.organisation.toBuffer(),
+          //anchor.utils.bytes.utf8.encode(acc.account.topic),
+          wallet.value.publicKey.toBuffer(),
+        ],
+        programID
+      );
+       console.log(seed);
+       await program.value.rpc.voteWithOrganisation({
+      accounts: {
+        voteAccount: acc.publicKey,
+        optionAccount:optionAccount,
+        voterAccount:voterAccount,
+        organisationParticipant:participantAccount,
+         user: wallet.value.publicKey,
+         systemProgram: web3.SystemProgram.programId,
+      },
+    });
+    }
    },
    async addOption(acc){
      console.log(acc);
