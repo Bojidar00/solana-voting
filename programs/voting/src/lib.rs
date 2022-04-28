@@ -1,5 +1,4 @@
 use anchor_lang::prelude::*;
-
 declare_id!("87WLQAHeR49beh5N1M7SCMyv9fvp2hkMSiwG88zqUXd9");
 
 
@@ -75,12 +74,12 @@ pub mod voting {
 
     pub fn vote(ctx: Context<Vote>)-> Result<()>{
         let topic = &mut ctx.accounts.vote_account;
-       /* if topic.applications_deadline > Clock::get()?.unix_timestamp{
+        if topic.applications_deadline > Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingNotStarted)?;
         }
         if topic.voting_deadline < Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingIsOver)?;
-        } */
+        } 
         if topic.use_organization==false{
         let option =&mut ctx.accounts.option_account;
         option.votes+=1;
@@ -93,12 +92,12 @@ pub mod voting {
     }
     pub fn vote_with_organisation(ctx: Context<VoteWithOrganisation>)-> Result<()>{
         let topic = &mut ctx.accounts.vote_account;
-       /* if topic.applications_deadline > Clock::get()?.unix_timestamp{
+        if topic.applications_deadline > Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingNotStarted)?;
         }
         if topic.voting_deadline < Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingIsOver)?;
-        } */
+        } 
         if topic.use_organization==true{
             let participant = &mut ctx.accounts.organisation_participant;
             if participant.allowed_to_vote==true{
@@ -253,3 +252,4 @@ pub enum VotingErr {
     #[msg("Please use 'vote_with_organisation' function instead of 'vote'!")]
     OrganisationNeeded,
 }
+
