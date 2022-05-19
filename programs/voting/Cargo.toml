@@ -1,8 +1,11 @@
 [package]
-name = "voting"
+name = "solana-voting"
 version = "0.1.0"
-description = "Created with Anchor"
+description = "This is an implementation of voting on the solana blockchain."
 edition = "2018"
+repository = "https://github.com/Bojidar00/solana-voting"
+license = "MIT OR Apache-2.0"
+
 
 [lib]
 crate-type = ["cdylib", "lib"]
@@ -16,4 +19,7 @@ cpi = ["no-entrypoint"]
 default = []
 
 [dependencies]
-anchor-lang = "0.22.1"
+anchor-lang = "0.24.2"
+
+
+

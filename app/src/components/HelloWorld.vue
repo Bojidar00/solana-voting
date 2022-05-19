@@ -16,7 +16,7 @@
     </form>
      
     <form>
-      Organization: <input type="text" v-model="organisation"/>
+      Organisation: <input type="text" v-model="organisation"/>
     </form>
     <button @click="createOrganisation">create organisation</button>
 
@@ -26,7 +26,7 @@
 
      <table>
        <tr><th>Organisation</th></tr>
-       <tr v-for="org in organisations" :key="org.publicKey"><td>{{org.account.name}}{{org.publicKey}}</td><td><button @click="joinOrganisation(org)">join Organisation</button></td> <td>
+       <tr v-for="org in organisations" :key="org.publicKey"><td>{{org.account.name}} {{org.publicKey}}</td><td><button @click="joinOrganisation(org)">join Organisation</button></td> <td>
 
            <form>
       Allow votiong: <input type="text" v-model="publicKey"/>

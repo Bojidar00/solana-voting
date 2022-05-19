@@ -16,7 +16,7 @@ pub mod voting {
         topic.options_count=0;
         topic.applications_deadline=Clock::get()?.unix_timestamp + (applications_deadline * 86400) as i64;
         topic.voting_deadline=Clock::get()?.unix_timestamp + (applications_deadline * 86400) as i64 + (voting_deadline * 86400) as i64;
-        topic.use_organization=false;
+        topic.use_organisation=false;
 
         Ok(())
     }
@@ -26,7 +26,7 @@ pub mod voting {
         topic.options_count=0;
         topic.applications_deadline=Clock::get()?.unix_timestamp + (applications_deadline * 86400) as i64;
         topic.voting_deadline=Clock::get()?.unix_timestamp + (applications_deadline * 86400) as i64 + (voting_deadline * 86400) as i64;
-        topic.use_organization=true;
+        topic.use_organisation=true;
         topic.organisation=organisation;
         Ok(())
     }
@@ -44,15 +44,15 @@ pub mod voting {
         Ok(())
     }
 
-    pub fn create_organisation(ctx: Context<CreateOrganization>,name:String)-> Result<()>{
-        let organization = &mut ctx.accounts.organisation_account;
-        organization.name=name;
-        organization.participants=0;
-        organization.authority= ctx.accounts.user.key();
+    pub fn create_organisation(ctx: Context<CreateOrganisation>,name:String)-> Result<()>{
+        let organisation = &mut ctx.accounts.organisation_account;
+        organisation.name=name;
+        organisation.participants=0;
+        organisation.authority= ctx.accounts.user.key();
         Ok(())
     }
 
-    pub fn join_organisation(ctx: Context<JoinOrganization>)-> Result<()>{
+    pub fn join_organisation(ctx: Context<JoinOrganisation>)-> Result<()>{
         let participant = &mut ctx.accounts.organisation_participant;
         participant.allowed_to_vote=false;
         let organisation = &mut ctx.accounts.organisation_account;
@@ -80,7 +80,7 @@ pub mod voting {
         if topic.voting_deadline < Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingIsOver)?;
         } 
-        if topic.use_organization==false{
+        if topic.use_organisation==false{
         let option =&mut ctx.accounts.option_account;
         option.votes+=1;
         let voter =&mut ctx.accounts.voter_account;
@@ -98,7 +98,7 @@ pub mod voting {
         if topic.voting_deadline < Clock::get()?.unix_timestamp{
             Err(VotingErr::VotingIsOver)?;
         } 
-        if topic.use_organization==true{
+        if topic.use_organisation==true{
             let participant = &mut ctx.accounts.organisation_participant;
             if participant.allowed_to_vote==true{
                 let option =&mut ctx.accounts.option_account;
@@ -117,7 +117,7 @@ pub mod voting {
 
 #[derive(Accounts)]
 pub struct Create<'info> {
-    #[account(init, payer = user, space = 32 + 32)]
+    #[account(init, payer = user, space = 32 + 32 + 16)]
     pub vote_account: Account<'info, VoteTopic>,
     #[account(mut)]
     pub user: Signer<'info>,
@@ -138,8 +138,8 @@ pub struct AddOption<'info> {
 }
 
 #[derive(Accounts)]
-pub struct CreateOrganization<'info>{
-    #[account(init, payer = user, space = 32 + 32)]
+pub struct CreateOrganisation<'info>{
+    #[account(init, payer = user, space = 32 + 32 + 32)]
     pub organisation_account: Account<'info, Organisation>,
     #[account(mut)]
     pub user: Signer<'info>,
@@ -147,7 +147,7 @@ pub struct CreateOrganization<'info>{
 }
 
 #[derive(Accounts)]
-pub struct JoinOrganization<'info>{
+pub struct JoinOrganisation<'info>{
     #[account(mut)]
     pub organisation_account: Account<'info, Organisation>,
     #[account(init, payer = user, space = 32 + 32 ,seeds=[organisation_account.key().as_ref(),user.key().as_ref()],bump)]
@@ -202,7 +202,7 @@ pub topic: String,
 pub options_count:u8,
 pub applications_deadline:i64,
 pub voting_deadline:i64,
-pub use_organization: bool,
+pub use_organisation: bool,
 pub organisation: Pubkey,
 }
 
